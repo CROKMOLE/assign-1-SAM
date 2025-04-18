@@ -1,0 +1,166 @@
+---
+title: "analysis"
+author: "Artyom Kabish"
+date: "2025-04-15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+# get emperical data
+```{r}
+data <- read.csv("sample.csv")
+exp_emperical <- data$sampleExp
+norm_emperical <- data$sampleNorm
+```
+
+#get theoretical data
+```{r}
+set.seed(42)  
+exp_theoretical <- rexp(500, rate = 4)
+norm_theoretical <- rnorm(500, mean = 2, sd = 0.3)
+```
+
+#values
+```{r}
+mean(exp_emperical)
+
+mean(norm_emperical)
+sd(norm_emperical)
+
+```
+
+
+
+#graphs for exponential
+```{r}
+library(ggplot2)
+
+ggplot(data.frame(x = exp_emperical), aes(x)) +
+  geom_histogram(bins = 20, fill = "steelblue", color = "white") +
+  labs(title = " sample by custom exponential random generator", x = "value", y = "frequency")
+
+ggplot(data.frame(x = exp_theoretical), aes(x)) +
+  geom_histogram(bins = 20, fill = "darkorange", color = "white") +
+  labs(title = "sample by R language exponential random generator", x = "value", y = "frequency")
+
+df_combined <- data.frame(
+  value = c(exp_emperical, exp_theoretical),
+  source = rep(c("custom", "R"), each = 100)
+)
+
+ggplot(df_combined, aes(x = value, fill = source)) +
+  geom_histogram(bins = 20, alpha = 0.6, position = "identity", color = "black") +
+  scale_fill_manual(values = c("custom" = "skyblue", "R" = "orange")) +
+  labs(title = "comparison custom vs r language", x = "value", y = "frequency")
+
+```
+#kolmogorov smirnov test exponential
+```{r}
+ks_result <- ks.test(exp_emperical, exp_theoretical)
+print(ks_result)
+
+```
+
+#chi-square test exponential
+```{r}
+breaks <- seq(0, max(c(exp_emperical, exp_theoretical)), length.out = 11)  
+
+bins_csv <- cut(exp_emperical, breaks = breaks, include.lowest = TRUE)
+bins_r   <- cut(exp_theoretical,         breaks = breaks, include.lowest = TRUE)
+
+freq_emperical <- table(bins_csv)
+freq_theoretical   <- table(bins_r)
+
+chisq_result <- chisq.test(x = freq_emperical, y = freq_theoretical)
+print(chisq_result)
+
+```
+
+
+#graphs for normal
+```{r}
+library(ggplot2)
+
+ggplot(data.frame(x = norm_emperical), aes(x)) +
+  geom_histogram(bins = 20, fill = "steelblue", color = "white") +
+  labs(title = " sample by custom normal random generator", x = "value", y = "frequency")
+
+ggplot(data.frame(x = norm_theoretical), aes(x)) +
+  geom_histogram(bins = 20, fill = "darkorange", color = "white") +
+  labs(title = "sample by R language normal random generator", x = "value", y = "frequency")
+
+df_combined <- data.frame(
+  value = c(norm_emperical, norm_theoretical),
+  source = rep(c("custom", "R"), each = 100)
+)
+
+ggplot(df_combined, aes(x = value, fill = source)) +
+  geom_histogram(bins = 20, alpha = 0.6, position = "identity", color = "black") +
+  scale_fill_manual(values = c("custom" = "skyblue", "R" = "orange")) +
+  labs(title = "comparison custom vs r language", x = "value", y = "frequency")
+
+```
+
+
+#kolmogorov smirnov test normal
+```{r}
+ks_result <- ks.test(norm_emperical, norm_theoretical)
+print(ks_result)
+
+```
+
+#chi-square test normal
+```{r}
+breaks <- seq(0, max(c(norm_emperical, norm_theoretical)), length.out = 11)  
+
+bins_csv <- cut(norm_emperical, breaks = breaks, include.lowest = TRUE)
+bins_r   <- cut(norm_theoretical,         breaks = breaks, include.lowest = TRUE)
+
+freq_emperical <- table(bins_csv)
+freq_theoretical   <- table(bins_r)
+
+chisq_result <- chisq.test(x = freq_emperical, y = freq_theoretical)
+print(chisq_result)
+
+```
+
+
+
+
+```{r}
+m1 <- c(0.5, 0.3, 0.45, 0.52, 0.51, 0.49, 0.49, 0.48, 0.52, 0.39)
+m2 <- c(0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0)
+m3 <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+m11 <-c(2515, 2397, 2535, 2544, 2546, 2455, 2568, 2555, 2543, 2625)
+m21 <-c(2485, 2497, 2513, 2424, 2548, 2371, 2545, 2450, 2510, 2514)
+m31 <-c(2466, 2526, 2439, 2544, 2472, 2632, 2555, 2557, 2508, 2582)
+
+t.test(m1, m2)
+t.test(m1, m3)
+t.test(m2, m3)
+
+wilcox.test(m1, m2)
+wilcox.test(m1, m3)
+wilcox.test(m2, m3)
+
+t.test(m11, m21)
+t.test(m11, m31)
+t.test(m21, m31)
+
+wilcox.test(m11, m21)
+wilcox.test(m11, m31)
+wilcox.test(m21, m31)
+
+
+
+```
